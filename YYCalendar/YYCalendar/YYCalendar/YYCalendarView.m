@@ -136,8 +136,12 @@
     NSDateFormatter *monthFormatter = [[NSDateFormatter alloc] init];
     [monthFormatter setDateFormat:@"MM"];
     
-    self.showYear = [[yearFormatter stringFromDate:[NSDate date]] intValue];
-    self.showMon = [[monthFormatter stringFromDate:[NSDate date]] intValue];
+    if (self.showYear == 0) {
+        self.showYear = [[yearFormatter stringFromDate:[NSDate date]] intValue];
+    }
+    if (self.showMon == 0) {
+        self.showMon = [[monthFormatter stringFromDate:[NSDate date]] intValue];
+    }
     
     int nextMon = (self.showMon+1) > 12 ? 1 : (self.showMon+1);
     int nextYear = (self.showMon+1) > 12 ? (self.showYear+1) : self.showYear;
@@ -339,17 +343,15 @@
 #pragma mark 查看上一月
 - (void)preMonthAction:(id)sender
 {
+    BOOL changeYear = NO;
     self.preMonBtn.enabled = NO;
     self.showMon -= 1;
     if (self.showMon == 0) {
         self.showYear -= 1;
         self.showMon = 12;
-        
-        if (self.yyDateViewYearChanged) {
-            self.yyDateViewYearChanged([NSString stringWithFormat:@"%d",self.showYear]);
-        }
+        changeYear = YES;
     }
-
+    
     CGRect curFrame = self.currDayView.frame;
     CGRect nextFrmae = self.nextDayView.frame;
     self.nextDayView.frame = self.preDayView.frame;
@@ -358,7 +360,7 @@
         
         self.currDayView.frame = nextFrmae;
         self.preDayView.frame = curFrame;
-
+        
         
     } completion:^(BOOL finished) {
         
@@ -373,8 +375,13 @@
         [self buildDayViewForDayView:self.preDayView
                                 Year:preYear
                                month:preMon];
-   
+        
         self.preMonBtn.enabled = YES;
+        if (changeYear) {
+            if (self.yyDateViewYearChanged) {
+                self.yyDateViewYearChanged([NSString stringWithFormat:@"%d",self.showYear]);
+            }
+        }
     }];
     
     self.titleLabel.text = [NSString stringWithFormat:@"%d-%d",self.showYear,self.showMon];
@@ -386,15 +393,14 @@
 #pragma mark 查看下一月
 - (void)nextMonthAction:(id)sender
 {
+    BOOL changeYear = NO;
     self.nextMonBtn.enabled = NO;
     self.showMon += 1;
     if (self.showMon == 13) {
         self.showYear += 1;
         self.showMon = 1;
         
-        if (self.yyDateViewYearChanged) {
-            self.yyDateViewYearChanged([NSString stringWithFormat:@"%d",self.showYear]);
-        }
+        changeYear = YES;
     }
     
     
@@ -421,6 +427,12 @@
                                 Year:nextYear
                                month:nextMon];
         self.nextMonBtn.enabled = YES;
+        
+        if (changeYear) {
+            if (self.yyDateViewYearChanged) {
+                self.yyDateViewYearChanged([NSString stringWithFormat:@"%d",self.showYear]);
+            }
+        }
     }];
     
     self.titleLabel.text = [NSString stringWithFormat:@"%d-%d",self.showYear,self.showMon];
